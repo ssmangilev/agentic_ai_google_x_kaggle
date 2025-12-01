@@ -14,16 +14,13 @@ langfuse = get_client()
 
 class PromptStorageABC(ABC):
 
-    @abstractmethod
     @property
     def client():
         pass
 
-    @abstractmethod
     def get_prompt(self, name: str) -> str:
         pass
 
-    @abstractmethod
     @property
     def is_authenticated(self) -> bool:
         pass
@@ -39,7 +36,7 @@ class BasePromptStorage(PromptStorageABC):
         return self._client_instance
 
 
-class LangfusePromptStorage(PromptStorageABC):
+class LangfusePromptStorage(BasePromptStorage):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,7 +47,7 @@ class LangfusePromptStorage(PromptStorageABC):
 
     def get_prompt(self, name: str) -> str:
         try:
-            prompt = self.client.get_prompt(prompt_name=name).compile()
+            prompt = self.client.get_prompt(name=name).compile()
             return prompt
         except Exception:
             raise Exception('Prompt name was not found!')

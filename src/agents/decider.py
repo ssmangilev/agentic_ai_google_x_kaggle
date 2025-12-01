@@ -10,6 +10,7 @@ from agents.sql_executor import sql_executor_agent
 from agents.validator import validator_agent
 from utils.agents import create_agent
 from utils.prompt_storage import langfuse_prompt_storage
+from utils.sanitaze import sanitize_agent_tools
 
 
 prompt = langfuse_prompt_storage.get_prompt(
@@ -19,9 +20,9 @@ prompt = langfuse_prompt_storage.get_prompt(
 decider_agent = create_agent(
     opentelemetry_span_name="Agent.Build.Decider",
     agent_name="decider_agent",
-    model="gemini-2.5-flash",
+    model_name="gemini-2.5-flash",
     prompt=prompt,
-    sub_agents=[
+    tools=[
         AgentTool(analyst_agent),
         AgentTool(chart_generator_agent),
         AgentTool(report_generator_agent),
@@ -29,3 +30,5 @@ decider_agent = create_agent(
         AgentTool(sql_executor_agent),
         AgentTool(validator_agent)]
 )
+
+sanitize_agent_tools(decider_agent)

@@ -1,4 +1,5 @@
 from google.adk.agents import Agent
+from google.adk.code_executors import BuiltInCodeExecutor
 
 from opentelemetry import trace
 
@@ -20,10 +21,11 @@ def create_agent(
     """Factory function to create the configured agent."""
 
     with tracer.start_as_current_span(opentelemetry_span_name):
-        return agent_type(
+        return Agent(
             name=agent_name,
             model=model_name,
             instruction=prompt,
             tools=tools,
-            after_agent_callback=save_context_callback
+            after_agent_callback=save_context_callback,
+            code_executor=BuiltInCodeExecutor()
         )
