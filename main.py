@@ -23,7 +23,9 @@ from google.adk.apps.app import App, EventsCompactionConfig
 from google.adk.agents import Agent, SequentialAgent
 from google.adk.runners import Runner
 from google.adk.sessions import DatabaseSessionService
-from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
+from google.adk.artifacts.in_memory_artifact_service import (
+    InMemoryArtifactService,
+)
 
 from agents.security_guard import security_guard_agent
 from agents.sql_executor import sql_executor_agent
@@ -50,25 +52,9 @@ session_service = DatabaseSessionService(db_url=db_url)
 
 artifact_service = InMemoryArtifactService()
 
-save_pdf_from_content_agent = Agent(
-    name="save_pdf_agent",
-    model="gemini-2.5-flash",
-    instruction="""
-    You are a technical automation agent. Your ONLY job is to save content to PDF files.
-    
-    CRITICAL RULES:
-    1. Do NOT chat. Do NOT say "Okay" or "I will do that".
-    2. If you receive text content and a request to save it, IMMEDIATELY call the `create_pdf_file_tool`.
-    3. Use the entire preceding analysis text as the `text_content` argument.
-    4. Never output plain text to the user. Only use the tool.
-    """,
-    tools=[create_pdf_file_tool],
-    output_key="pdf",
-)
-
 main_pipeline = SequentialAgent(
     name="main_pipeline",
-    sub_agents=[analyst_agent, validator_agent, save_pdf_from_content_agent]
+    sub_agents=[analyst_agent, validator_agent, report_generator_agent]
 )
 
 app = App(
@@ -97,7 +83,7 @@ async def main(message: cl.Message):
     user_id = cl.user_session.get("id", "anonymous_user")
 
     with propagate_attributes(session_id=session_id):
-        session = await session_service.create_session(
+        await session_service.create_session(
             app_name="agents",
             user_id=user_id,
             session_id=session_id
@@ -110,12 +96,13 @@ async def main(message: cl.Message):
 
         # Initialize the message
         msg = cl.Message(content="")
-        input_data = {"table_name": message.content, "timestamp": str(datetime.now())}
+        input_data = {
+            "table_name": message.content,
+            "timestamp": str(datetime.now())}
 
         # Track the full response text to scan for images later
         full_response_text = ""
         elements = []
-        processed_files = set() # Prevent duplicate renders
 
         async for event in runner.run_async(
             user_id=cl.user_session.get("id", "anonymous_user"),
@@ -124,9 +111,9 @@ async def main(message: cl.Message):
             state_delta=input_data,
         ):
             print(f"DEBUG: Event Author: {event.author}")
-            if event.content and event.content.parts and event.content.parts[0].text:
-                print(f"DEBUG [{event.author}]: {event.content.parts[0].text[:100]}...")
-            if event.author == 'save_pdf_agent' and event.content and event.content.parts:
+            if event.content and event.content.parts and event.content.parts[0].text: # NOQA
+                print(f"DEBUG [{event.author}]: {event.content.parts[0].text[:100]}...") # NOQA
+            if event.author == 'save_pdf_agent' and event.content and event.content.parts: # NOQA
                 for part in event.content.parts:
                     if part.text:
                         full_response_text += part.text
@@ -135,7 +122,7 @@ async def main(message: cl.Message):
                     if part.function_response:
                         # The tool has now finished 'save_artifact'
                         # Now it is safe to load it!
-                        
+
                         # Use the filename the tool actually saved
                         filename = "wine_quality_analysis.pdf"
                         breakpoint()
@@ -147,7 +134,9 @@ async def main(message: cl.Message):
                         )
 
                         if artifact:
-                            file_content = artifact.inline_data.data if hasattr(artifact, 'inline_data') else artifact
+                            file_content = artifact.inline_data.data \
+                                if hasattr(artifact, 'inline_data') \
+                                else artifact
                             elements.append(cl.File(
                                 name=filename,
                                 content=file_content,

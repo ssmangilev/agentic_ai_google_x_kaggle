@@ -7,13 +7,15 @@ from google.genai.types import Part, Blob
 
 
 async def create_pdf_file(
-    content_data: str, # This is now the JSON string you provided
+    content_data: str,  # This is now the JSON string you provided
     tool_context: ToolContext,
     filename: str = "report.pdf",
 ):
     breakpoint()
     # Parse the incoming data
-    data = json.loads(content_data) if isinstance(content_data, str) else content_data
+    data = json.loads(content_data)\
+        if isinstance(content_data, str)\
+        else content_data
 
     pdf = FPDF()
     pdf.add_page()
@@ -41,7 +43,8 @@ async def create_pdf_file(
     with pdf.table() as table:
         for row in metrics_table:
             if "|" in row and "---" not in row:
-                cols = [c.strip().replace("**", "") for c in row.split("|") if c.strip()]
+                cols = [c.strip().replace("**", "")
+                        for c in row.split("|") if c.strip()]
                 if cols:
                     row_cells = table.row()
                     for col in cols:
@@ -67,7 +70,8 @@ async def create_pdf_file(
             pdf.image(img_io, w=100)  # Adjust width as needed
             pdf.ln(5)
             pdf.set_font("helvetica", "I", 8)
-            pdf.cell(0, 5, f"Figure: {charts_names[version_id]}", ln=True, align='C')
+            pdf.cell(0, 5, f"Figure: {charts_names[version_id]}",
+                     ln=True, align='C')
             pdf.ln(5)
             version_id += 1
         except IndexError:
@@ -96,7 +100,8 @@ async def create_pdf_file(
         )
     )
     # Save artifact
-    version = await tool_context.save_artifact(filename=filename, artifact=artifact_part)
+    version = await tool_context.save_artifact(
+        filename=filename, artifact=artifact_part)
 
     return {"status": "success", "filename": filename, "version": version}
 
