@@ -1,7 +1,8 @@
-from typing import Dict, List
+from langfuse import observe
 
 
-def _check_hallucination_of_metric(draft_report: str, ground_truth_data: str, critiques: List[str]): # NOQA
+@observe
+def _check_hallucination_of_metric(draft_report: str, ground_truth_data: str, critiques: list[str]): # NOQA
     """
     Simulates checking if metrics or claims in the report
     are unsupported by the ground truth.
@@ -16,7 +17,8 @@ def _check_hallucination_of_metric(draft_report: str, ground_truth_data: str, cr
         critiques.append("Hallucination: The report introduces a metric ('foot traffic') unsupported by the Ground Truth data.") # NOQA
 
 
-def _check_temporal_scope_mismatch(original_query: str, draft_report: str, critiques: List[str]): # NOQA
+@observe
+def _check_temporal_scope_mismatch(original_query: str, draft_report: str, critiques: list[str]): # NOQA
     """
     Simulates checking if the time scope
     analyzed matches the time scope requested.
@@ -30,7 +32,8 @@ def _check_temporal_scope_mismatch(original_query: str, draft_report: str, criti
         critiques.append("Responsiveness: Temporal Mismatch: User asked for Q3 analysis, but the report focuses on Q4.") # NOQA
 
 
-def _check_core_query_addressal(original_query: str, draft_report: str, critiques: List[str]): # NOQA
+@observe
+def _check_core_query_addressal(original_query: str, draft_report: str, critiques: list[str]): # NOQA
     """
     Simulates checking if the report addresses
     the primary subject of the user's query.
@@ -45,7 +48,8 @@ def _check_core_query_addressal(original_query: str, draft_report: str, critique
         critiques.append(f"Responsiveness: The report fails to directly address the core topic derived from the query: '{core_topic}'.") # NOQA
 
 
-def _check_logical_contradiction(draft_report: str, ground_truth_data: str, critiques: List[str]): # NOQA
+@observe
+def _check_logical_contradiction(draft_report: str, ground_truth_data: str, critiques: list[str]): # NOQA
     """
     Simulates checking for internal logical
     errors between the data and the report's claims.
@@ -59,7 +63,8 @@ def _check_logical_contradiction(draft_report: str, ground_truth_data: str, crit
         critiques.append("Logic Error: Contradictory information (report claims 'rose', data claims 'dropped').") # NOQA
 
 
-def _check_formatting_completeness(draft_report: str, critiques: List[str]):
+@observe
+def _check_formatting_completeness(draft_report: str, critiques: list[str]):
     """
     Simulates checking structural requirements, like Markdown
     validity and placeholder inclusion.
@@ -71,7 +76,8 @@ def _check_formatting_completeness(draft_report: str, critiques: List[str]):
                          "like [CHART_1: ...]).")
 
 
-def validate_report_draft(original_query: str, ground_truth_data: str, draft_report: str) -> Dict[str, str]: # NOQA
+@observe
+def validate_report_draft(original_query: str, ground_truth_data: str, draft_report: str) -> dict[str, str]: # NOQA
     """
     TOOL: Executes the Quality Assurance audit for a generated BI report by
     delegating checks to abstract, specialized functions.
@@ -100,7 +106,7 @@ def validate_report_draft(original_query: str, ground_truth_data: str, draft_rep
     if critiques:
         # Action: Return the FAIL status with detailed critique
         return {
-            "STATUS": "FAIL",
+            "status": "FAIL",
             "CRITIQUE": "\n- " + "\n- ".join(critiques)
         }
     else:

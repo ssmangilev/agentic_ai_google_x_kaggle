@@ -1,7 +1,10 @@
 import os
 
+from langfuse import observe
 
-def get_postgres_conn_string() -> str:
+
+@observe
+def get_postgres_conn_string() -> dict[str, any]:
     """
     Retrieves the PostgreSQL connection string from the POSTGRES_CONN_STRING
     environment variable. This string is necessary for connecting to the
@@ -15,9 +18,6 @@ def get_postgres_conn_string() -> str:
 
     if not conn_string:
         # Raise a specific error if the environment variable is missing
-        raise EnvironmentError(
-            "POSTGRES_CONN_STRING environment variable not found. "
-            "Cannot connect to the database."
-        )
+        return {"status": "error", "message": "POSTGRES_CONN_STRING environment variable not found. Cannot connect to the database."}
 
-    return conn_string
+    return {"status": "success", "conn_string": conn_string}

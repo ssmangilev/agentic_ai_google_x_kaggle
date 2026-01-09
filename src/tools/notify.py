@@ -1,8 +1,10 @@
 import time
-from typing import Dict
+
+from langfuse import observe
 
 
-def notify_security_team(content: str, reason: str) -> Dict[str, str]:
+@observe
+def notify_security_team(content: str, reason: str) -> dict[str, any]:
     """
     TOOL: Triggers an email or alert notification to the security operations
     center when a high-priority security incident occurs.

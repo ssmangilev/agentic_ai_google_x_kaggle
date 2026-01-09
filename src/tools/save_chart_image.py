@@ -1,9 +1,10 @@
 import os
 
-from typing import Dict
+from langfuse import observe
 
 
-def save_chart_image(figure_object, file_path: str) -> Dict[str, str]:
+@observe
+def save_chart_image(figure_object, file_path: str) -> dict[str, any]:
     """
     TOOL: Saves a chart figure object (Plotly or Matplotlib/Seaborn)
     as an image.

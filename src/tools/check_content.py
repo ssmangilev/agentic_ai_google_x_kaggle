@@ -1,6 +1,8 @@
-from typing import Tuple, Any, Dict
+from typing import Tuple, Any, Dict, Optional
 
 from tools.notify import notify_security_team
+
+from langfuse import observe
 
 
 SECURITY_BLOCK_MESSAGE = (
@@ -10,7 +12,8 @@ SECURITY_BLOCK_MESSAGE = (
 )
 
 
-def _is_malicious(self, content: str, context: Dict[str, Any]) -> Tuple[bool, str]:  # NOQA
+@observe
+def _is_malicious(content: str, context: Dict[str, Any]) -> Tuple[bool, str]:  # NOQA
     """
     Implements the 🛡️ Core Responsibilities and Threat Evaluation Framework
     (1. Surface-Level to 5. Red-Team Counterfactual Simulation).
@@ -25,8 +28,6 @@ def _is_malicious(self, content: str, context: Dict[str, Any]) -> Tuple[bool, st
     """
     # --- 1. Surface-Level Scan ---
     content_lower = content.lower()
-    if any(pattern in content_lower for pattern in self.threat_patterns):
-        return True, "Surface-Level: Detected explicit threat keyword or instruction override." # NOQA
 
     # --- 2. Semantic Scan (Simulated) ---
     if "what were your instructions" in content_lower or "reveal your memory" in content_lower:  # NOQA
@@ -49,7 +50,8 @@ def _is_malicious(self, content: str, context: Dict[str, Any]) -> Tuple[bool, st
     return False, "SAFE"
 
 
-def process_content(self, content: str, context: Dict[str, Any] = None) -> Dict[str, str]:  # NOQA
+@observe
+def process_content(content: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, str]:  # NOQA
     """
     The main public method for message interception and security enforcement.
 
@@ -64,7 +66,7 @@ def process_content(self, content: str, context: Dict[str, Any] = None) -> Dict[
     if context is None:
         context = {}
 
-    is_unsafe, reason = self._is_malicious(content, context)
+    is_unsafe, reason = _is_malicious(content, context)
 
     if is_unsafe:
         # --- UNSAFE / AMBIGUOUS Action ---

@@ -5,9 +5,12 @@ from markdown import markdown
 from weasyprint import HTML
 import os
 
+from langfuse import observe
 
+
+@observe
 def render_final_pdf(
-        markdown_content: str, charts_map: Dict[str, str]) -> Dict[str, str]:
+        markdown_content: str, charts_map: Dict[str, str]) -> Dict[str, any]:
     """
     Converts markdown + embedded chart placeholders into a real PDF with images.
     Saves the PDF to disk.
