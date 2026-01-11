@@ -9,9 +9,8 @@ from google.genai.types import Part, Blob
 async def create_pdf_file(
     content_data: str,  # This is now the JSON string you provided
     tool_context: ToolContext,
-    filename: str = "report.pdf",
 ):
-    breakpoint()
+    filename = "report.pdf"
     # Parse the incoming data
     data = json.loads(content_data)\
         if isinstance(content_data, str)\

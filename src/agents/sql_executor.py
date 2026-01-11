@@ -28,24 +28,11 @@ postgres_mcp = McpToolset(
 )
 
 
-filesystem_mcp = McpToolset(
-    connection_params=StdioConnectionParams(
-        server_params=StdioServerParameters(
-            command="npx",
-            args=[
-                "-y",
-                "@modelcontextprotocol/server-filesystem",
-                f"{workspace_folder}"]),
-        timeout=60,
-    ),
-)
-
-
 sql_executor_agent = create_agent(
     opentelemetry_span_name="Agent.Build.SQL",
     agent_name="sql_executor_agent",
     model_name="gemini-2.5-flash",
     prompt=prompt,
-    tools=[postgres_mcp, filesystem_mcp],
+    tools=[postgres_mcp],
     output_key='sql_data'
 )
